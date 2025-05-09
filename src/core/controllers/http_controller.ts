@@ -2,8 +2,9 @@ import { validationModelMiddleware } from "../middlewares/validation_model";
 import { Result } from "../helpers/result";
 import { Router, Request, Response } from "express";
 import { CoreValidation } from "../validations/core_validation";
-import { plainToInstance } from "class-transformer";
+import { ClassConstructor, plainToInstance } from "class-transformer";
 import { IRouteModel, Routes } from "../models/routes";
+import { validate, ValidationError } from "class-validator";
 
 export type HttpMethodType = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "PATCH" | "HEAD";
 
@@ -84,7 +85,7 @@ export class CoreHttpController<V> implements ICoreHttpController {
   validationModel: any;
   subRoutes: ISubSetFeatureRouter<V>[] = [];
 
-  routes: any = {
+  routes = {
     POST: null,
     GET: null,
     DELETE: null,
@@ -112,9 +113,16 @@ export class CoreHttpController<V> implements ICoreHttpController {
   call(): Routes {
     if (this.subRoutes.isNotEmpty()) {
       this.subRoutes.map(async (el) => {
-        this.router[el.method.toLowerCase()](this.mainURL + "/" + el.subUrl, async (req, res) => {
+        let url = el.subUrl;
+        if (el.subUrl.at(0) !== '/') {
+          url = `/${el.subUrl}`;
+        }
+        this.router[el.method.toLowerCase()](this.mainURL + url, async (req, res) => {
           if (el.fn instanceof CallbackStrategyWithValidationModel) {
-            this.responseHelper(res, el.fn.call(req.body));
+
+            // @ts-expect-error
+            (await valid(el.fn.validationModel, req.body)).fold((s) => this.responseHelper(res, el.fn.call(s)), (e) => res.status(400).json(e))
+
             return;
           }
           if (el.fn instanceof CallbackStrategyWithIdQuery) {
@@ -182,7 +190,7 @@ export class CoreHttpController<V> implements ICoreHttpController {
         });
       });
     }
-
+    console.log(this.routes);
     if (this.routes["POST"] != null) {
       this.router.post(this.mainURL, validationModelMiddleware(this.validationModel), (req, res) =>
         this.requestResponseController<V>(req, res, this.routes["POST"])
@@ -248,3 +256,33 @@ export class CoreHttpController<V> implements ICoreHttpController {
     this.routes["GET"] = usecase;
   }
 }
+
+
+
+export const valid = async <T>(validationModelType: any, object): Promise<Result<string, T>> => {
+  console.log(validationModelType);
+  console.log(object);
+  const model = plainToInstance(validationModelType, object) as unknown as object;
+  const errors: ValidationError[] = await validate(model, {
+    skipMissingProperties: false,
+    whitelist: false,
+    forbidNonWhitelisted: true,
+  });
+
+  if (errors.isNotEmpty()) {
+    const message = errors.map((error: ValidationError) => {
+      let result = "";
+      if (error.children)
+        error.children.map((el) => {
+          if (el.constraints) {
+            result += Object.values(el.constraints).join(", ");
+          }
+        });
+      if (error.constraints) result += Object.values(error.constraints).join(", ");
+      return result;
+    });
+    return Result.error(message.join(", \n"));
+  } else {
+    return Result.ok(this as unknown as T);
+  }
+};

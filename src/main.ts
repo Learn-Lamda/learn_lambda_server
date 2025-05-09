@@ -11,12 +11,9 @@ extensions();
 
 const socketSubscribers: SocketSubscriber<any>[] = [];
 
-// new App(httpRoutes, socketSubscribers).listen();
-new VmUseCase().call(`  const a = 5;
-const b = 10;
-a + b;
-`).map((el) => console.log(el));
-new VmUseCase().call(`  const a = 5;
-const b = 10;
-a + b;
-`).map((el) => console.log(el));
+new App(httpRoutes.map((el) => el.call()), socketSubscribers).listen();
+
+// new VmUseCase().call(`console.log(2);
+// console.log(2);
+// 10 + 10;
+// console.log(2);`).map((el) => console.log(JSON.stringify(el)));

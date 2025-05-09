@@ -10,6 +10,7 @@ declare global {
     firstElement(): T | undefined;
     isEmpty(): boolean;
     isNotEmpty(): boolean;
+    removeFromEnd(): Array<T>;
   }
 
   interface String {

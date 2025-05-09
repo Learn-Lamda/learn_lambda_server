@@ -46,4 +46,10 @@ export const ArrayExtensions = () => {
       return this.length !== 0;
     };
   }
+  if ([].removeFromEnd === undefined) {
+    Array.prototype.removeFromEnd = function () {
+      this.pop()
+      return this;
+    }
+  }
 };
