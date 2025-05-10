@@ -43,7 +43,7 @@ export class VmUseCase {
                 }
 
             });
-
+            console.log(codeLog);
             return Result.ok(codeLog);
         } catch (error) {
             return Result.ok()

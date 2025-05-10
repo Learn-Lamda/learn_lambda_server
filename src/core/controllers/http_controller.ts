@@ -190,7 +190,6 @@ export class CoreHttpController<V> implements ICoreHttpController {
         });
       });
     }
-    console.log(this.routes);
     if (this.routes["POST"] != null) {
       this.router.post(this.mainURL, validationModelMiddleware(this.validationModel), (req, res) =>
         this.requestResponseController<V>(req, res, this.routes["POST"])
