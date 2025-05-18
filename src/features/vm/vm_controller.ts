@@ -1,68 +1,136 @@
-
-import { CallbackStrategyWithValidationModel, CoreHttpController, ResponseBase, SubRouter } from "../../core/controllers/http_controller";
+import {
+  CallbackStrategyWithValidationModel,
+  CoreHttpController,
+  ResponseBase,
+} from "../../core/controllers/http_controller";
 import { VmValidationModel } from "./vm_validation_model";
 import { Result } from "../../core/helpers/result";
 import { VM } from "vm2";
-import * as tsNode from 'ts-node';
-type Statuses = 'ok' | 'error' | 'nocode';
-interface VMContext {
-    line: number;
-    error?: any;
-    status: Statuses;
+import ErrorStackParser from "error-stack-parser";
+
+export interface VMContext {
+  line: number;
+  logs: string;
+  status: string;
 }
 
+function replaceConsoleLogToMyLog(code: string, line: number) {
+  return code.replace(/console\.log\s*\(/g, (match, offset) => {
+    return `console.log(${line}, `;
+  });
+}
 
 export class VmUseCase {
+  call = (code: string): Result<void, VMContext[]> => {
+    try {
+      const lines = code.split("\n");
+      const executedLines: number[] = [];
 
-    call = (code: string): Result<void, VMContext[]> => {
-        try {
-            let globalLine = 0;
-            const logs = [];
-            let vm = new VM({
-                sandbox: {
-                    console: {
-                        log: (...args) => {
-                            logs.push({ log: args.join(' '), line: globalLine });
-                        }
-                    }
-                },
-            });
-            const codeLog = tsNode.create().compile(code, '/vm_validation_model.ts').split('\n').removeFromEnd().map<VMContext>((line, index) => {
-                globalLine = index;
-                console.log(line);
-                if (line.trim().isNotEmpty()) {
-                    try {
-                        vm.run(line)
-                        return { line: index + 1, out: logs.find((el) => el.line === index), status: 'ok' };
-
-                    } catch (error) {
-                        return { line: index + 1, error: error.message, status: 'error' };
-                    }
-                } else {
-                    return { line: index + 1, status: 'nocode' };
-                }
-
-            });
-            console.log(codeLog);
-            return Result.ok(codeLog);
-        } catch (error) {
-            return Result.ok()
+      function __markExecuted(line: number) {
+        if (!executedLines.includes(line)) {
+          executedLines.push(line);
         }
+      }
+      const instrumentedCode = lines
+        .map((line, idx) => {
+          const lineNumber = idx + 1;
+          const r = replaceConsoleLogToMyLog(line, lineNumber);
+          return `__markExecuted(${lineNumber});\n${r}`;
+        })
+        .join("\n");
+
+      const emptyLines = lines
+        .findAllIndex((el) => el.trim() === "" || el === "}")
+        .map((el) => Number(el) + 1);
+
+      const errorLines: number[] = [];
+      const logs: { line: number; log: string }[] = [];
+      const allLinesNumbers = lines.map((_, i) => i + 1);
+
+      const vm = new VM({
+        sandbox: {
+          __markExecuted,
+          console: {
+            log: (...args) => {
+              const argsEducated = args.slice(1, args.length).map((el) => {
+                if (el === undefined) {
+                  return "undefined";
+                }
+                if (el === null) {
+                  return "null";
+                }
+                return el;
+              });
+
+              const index = logs.findIndex((el) => el.line == args.at(0));
+              if (index !== -1) {
+                logs[index].log = logs
+                  .at(index)
+                  .log.concat(",")
+                  .concat(argsEducated.join(" "));
+                return;
+              }
+              logs.push({
+                log: argsEducated.join(" "),
+                line: args.at(0),
+              });
+            },
+          },
+        },
+      });
+
+      try {
+        vm.run(instrumentedCode);
+      } catch (error: any) {
+        const parsedStack = ErrorStackParser.parse(error);
+        if (parsedStack.length) {
+          errorLines.push(parsedStack[0].lineNumber / 2);
+        }
+      }
+
+      const notExecuted = allLinesNumbers
+        .filter((l) => !executedLines.includes(l))
+        .filter((el) => !emptyLines.includes(el));
+
+      const executedLinesFilter = executedLines
+        .filter((el) => !emptyLines.includes(el))
+        .filter((el) => !errorLines.includes(el));
+
+      const z = lines.map((_, i) => {
+        const line = i + 1;
+        const logEntry = logs.find((l) => l.line === line);
+
+        return {
+          line: line,
+          logs: logEntry ? logEntry.log : null,
+          status: executedLinesFilter.includes(line)
+            ? "success"
+            : errorLines.includes(line)
+            ? "error"
+            : notExecuted.includes(line)
+            ? "not_execute"
+            : emptyLines.includes(line)
+            ? "empty"
+            : "unknown",
+        };
+      });
+      return Result.ok(z);
+    } catch (error) {
+      return Result.error(error);
     }
+  };
 }
 
 export class RunVm extends CallbackStrategyWithValidationModel<VmValidationModel> {
-    validationModel: VmValidationModel = new VmValidationModel();
-    async call(model: VmValidationModel): ResponseBase {
-        return Result.ok(new VmUseCase().call(model.code));
-    }
-
+  validationModel: VmValidationModel = new VmValidationModel();
+  async call(model: VmValidationModel): ResponseBase {
+    return Result.ok(new VmUseCase().call(model.code));
+  }
 }
 export class VmController extends CoreHttpController<VmValidationModel> {
-    constructor() {
-        super({ url: "vm", validationModel: VmValidationModel });
-        // this.post = new RunVm().call
-        this.routes.POST = new RunVm().call
-        // this.subRoutes.push(new SubRouter<VmValidationModel>("POST", "/run", new RunVm()))
-    }
+  constructor() {
+    super({ url: "vm", validationModel: VmValidationModel });
+
+    this.routes.POST = new RunVm().call;
+  }
 }

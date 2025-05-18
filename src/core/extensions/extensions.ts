@@ -11,6 +11,7 @@ declare global {
     isEmpty(): boolean;
     isNotEmpty(): boolean;
     removeFromEnd(): Array<T>;
+    findAllIndex(predicate: (value: T, index: number, array: T[]) => boolean): Array<Number>;
   }
 
   interface String {
@@ -22,6 +23,7 @@ declare global {
     pathNormalize(): string;
     isEqual(str: string): boolean;
     isEqualMany(str: string[]): boolean;
+    allReplace(search: string, replace: string);
   }
 }
 export const extensions = () => {

@@ -44,4 +44,11 @@ export const StringExtensions = () => {
       return false;
     };
   }
+  if ("".allReplace === undefined) {
+    String.prototype.allReplace = function replaceAll(search: string, replace: string): string {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // экранируем спецсимволы
+      const regex = new RegExp(escapedSearch, 'g');
+      return this.replace(regex, replace);
+    }
+  }
 };

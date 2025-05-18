@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx jest",
+    "test:watch": "nodemon --watch ./ --ext ts --exec \"mocha -r ts-node/register 'test/**/*.spec.ts'\"",
     "dev": "nodemon",
     "migrate": "npx prisma migrate dev --name init"
   },
@@ -14,18 +15,23 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/express-fileupload": "^1.5.1",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^22.13.1",
-    "nodemon": "^3.1.9",
+    "mocha": "^11.3.0",
+    "nodemon": "^3.1.10",
     "prisma": "^6.3.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.3",
+    "@types/chai": "^4.3.0",
+    "chai": "^4.3.7"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cors": "^2.8.5",
+    "error-stack-parser": "^2.1.4",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
     "reflect-metadata": "^0.2.2",

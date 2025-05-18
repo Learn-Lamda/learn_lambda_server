@@ -52,4 +52,15 @@ export const ArrayExtensions = () => {
       return this;
     }
   }
+  if ([].findAllIndex === undefined) {
+    Array.prototype.findAllIndex = function findAllIndex<T>(predicate: (value: T, index: number, array: T[]) => boolean): number[] {
+      const result: number[] = [];
+      for (let i = 0; i < this.length; i++) {
+        if (predicate(this[i], i, this)) {
+          result.push(i);
+        }
+      }
+      return result;
+    }
+  }
 };
