@@ -1,4 +1,5 @@
 import { ArrayExtensions } from "./array";
+import { BufferExtensions } from "./buffer";
 
 import { StringExtensions } from "./string";
 
@@ -11,7 +12,9 @@ declare global {
     isEmpty(): boolean;
     isNotEmpty(): boolean;
     removeFromEnd(): Array<T>;
-    findAllIndex(predicate: (value: T, index: number, array: T[]) => boolean): Array<Number>;
+    findAllIndex(
+      predicate: (value: T, index: number, array: T[]) => boolean
+    ): Array<Number>;
   }
 
   interface String {
@@ -25,8 +28,12 @@ declare global {
     isEqualMany(str: string[]): boolean;
     allReplace(search: string, replace: string);
   }
+  interface BufferConstructor {
+    joinBuffers(buffers: Array<Buffer>, delimiter?: string);
+  }
 }
 export const extensions = () => {
   ArrayExtensions();
   StringExtensions();
+  BufferExtensions();
 };

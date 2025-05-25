@@ -1,7 +1,7 @@
-import { extensions } from "../src/core/extensions/extensions";
-import { VMContext, VmUseCase } from "../src/features/vm/vm_controller";
-import { getFake } from "./core/helper/get_fake";
-import { testEqualObject } from "./core/helper/test_equal_object";
+import { extensions } from "../../src/core/extensions/extensions";
+import { VMContext, VmUseCase } from "../../src/features/vm/vm_controller";
+import { getFake } from "../core/helper/get_fake";
+import { testEqualObject } from "../core/helper/test_equal_object";
 
 extensions();
 
@@ -9,7 +9,7 @@ describe("Vm feature test", async () => {
   it("vm1 ", async () => {
     let vMContext: VMContext[] | undefined;
     await new VmUseCase()
-      .call(await getFake("code_vm_1.ts"))
+      .call(await getFake("/code_vm/code_vm_1.ts"))
       .map(async (el) => {
         vMContext = el;
       });
@@ -24,7 +24,7 @@ describe("Vm feature test", async () => {
   it("vm2", async () => {
     let vMContext: VMContext[] | undefined;
     await new VmUseCase()
-      .call(await getFake("code_vm_2.ts"))
+      .call(await getFake("/code_vm/code_vm_2.ts"))
       .map(async (el) => {
         vMContext = el;
       });
@@ -43,7 +43,7 @@ describe("Vm feature test", async () => {
   it("vm3 ", async () => {
     let vMContext: VMContext[] | undefined;
     await new VmUseCase()
-      .call(await getFake("code_vm_3.ts"))
+      .call(await getFake("/code_vm/code_vm_3.ts"))
       .map(async (el) => {
         vMContext = el;
       });
@@ -56,7 +56,7 @@ describe("Vm feature test", async () => {
   it("vm4 ", async () => {
     let vMContext: VMContext[] | undefined;
     await new VmUseCase()
-      .call(await getFake("code_vm_4.ts"))
+      .call(await getFake("/code_vm/code_vm_4.ts"))
       .map(async (el) => {
         vMContext = el;
       });
@@ -72,7 +72,7 @@ describe("Vm feature test", async () => {
   it("vm5 ", async () => {
     let vMContext: VMContext[] | undefined;
     await new VmUseCase()
-      .call(await getFake("code_vm_5.ts"))
+      .call(await getFake("/code_vm/code_vm_5.ts"))
       .map(async (el) => {
         vMContext = el;
       });
@@ -89,7 +89,7 @@ describe("Vm feature test", async () => {
   it("vm6", async () => {
     let vMContext: VMContext[] | undefined;
     await new VmUseCase()
-      .call(await getFake("code_vm_6.ts"))
+      .call(await getFake("/code_vm/code_vm_6.ts"))
       .map(async (el) => {
         vMContext = el;
       });
@@ -97,5 +97,18 @@ describe("Vm feature test", async () => {
       { line: 1, logs: "undefined", status: "success" },
     ]);
   });
- 
+  it("vm7", async () => {
+    let vMContext: VMContext[] | undefined;
+    await new VmUseCase()
+      .call(await getFake("/code_vm/code_vm_7.ts"))
+      .map(async (el) => {
+        vMContext = el;
+      });
+    testEqualObject(vMContext, [
+      { line: 1, logs: null, status: "success" },
+      { line: 2, logs: null, status: "success" },
+      { line: 3, logs: null, status: "empty" },
+      { line: 4, logs: null, status: "success" },
+    ]);
+  });
 });

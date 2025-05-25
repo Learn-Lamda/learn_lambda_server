@@ -1,0 +1,36 @@
+function p2() {
+  const ff = [];
+  ff.at(0);
+  ff[0];
+  ff.concat([]);
+  ff.copyWithin(1, 1);
+  ff.entries();
+  ff.every((_, __) => true);
+  ff.fill("");
+  ff.filter((_) => true);
+  ff.find((_) => true);
+  ff.findIndex((_) => true);
+  ff.flat(1);
+  ff.flatMap((_) => true);
+  ff.forEach((_) => {});
+  ff.includes("");
+  ff.indexOf(0);
+  ff.join("");
+  ff.map((_) => _);
+  ff.pop();
+  ff.push(true);
+  ff.reduce((_, ___) => ___);
+  ff.reduceRight((_, __) => __);
+  ff.reverse();
+  ff.shift();
+  ff.slice(1);
+  ff.some((_) => true);
+  ff.sort((_, __) => __);
+  ff.splice(1);
+  ff.toLocaleString();
+  ff.toString();
+  ff.unshift();
+  ff.values();
+}
+p2();
+ 

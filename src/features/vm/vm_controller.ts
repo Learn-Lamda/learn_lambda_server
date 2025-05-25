@@ -7,7 +7,7 @@ import { VmValidationModel } from "./vm_validation_model";
 import { Result } from "../../core/helpers/result";
 import { VM } from "vm2";
 import ErrorStackParser from "error-stack-parser";
-
+import * as ts from "typescript";
 export interface VMContext {
   line: number;
   logs: string;
@@ -34,8 +34,8 @@ export class VmUseCase {
       const instrumentedCode = lines
         .map((line, idx) => {
           const lineNumber = idx + 1;
-          const r = replaceConsoleLogToMyLog(line, lineNumber);
-          return `__markExecuted(${lineNumber});\n${r}`;
+          const replaceLog = replaceConsoleLogToMyLog(line, lineNumber);
+          return `__markExecuted(${lineNumber});\n${replaceLog}`;
         })
         .join("\n");
 
@@ -80,7 +80,14 @@ export class VmUseCase {
       });
 
       try {
-        vm.run(instrumentedCode);
+        vm.run(
+          ts.transpileModule(instrumentedCode, {
+            compilerOptions: {
+              module: ts.ModuleKind.CommonJS,
+              target: ts.ScriptTarget.ES5,
+            },
+          }).outputText
+        );
       } catch (error: any) {
         const parsedStack = ErrorStackParser.parse(error);
         if (parsedStack.length) {

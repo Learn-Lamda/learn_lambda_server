@@ -1,0 +1,115 @@
+import { extensions } from "../../src/core/extensions/extensions";
+
+import { StatisticTypeUsageCompleteUseCase } from "../../src/features/statistic_types_usage/statistic_types_usage_computed_usecase";
+import { useCaseTest } from "../core/helper/use_case_test";
+
+extensions();
+
+describe("Static types usage", async () => {
+  useCaseTest(
+    "code_types_usage_1",
+    "/code_types_usage/code_types_usage_1.ts",
+    new StatisticTypeUsageCompleteUseCase(),
+    {
+      String: {
+        at: 1,
+        charAt: 1,
+        charCodeAt: 1,
+        codePointAt: 1,
+        concat: 1,
+        endsWith: 1,
+        includes: 1,
+        indexOf: 1,
+        lastIndexOf: 1,
+        localeCompare: 1,
+        match: 1,
+        normalize: 1,
+        padEnd: 1,
+        padStart: 1,
+        repeat: 1,
+        replace: 1,
+        length: 1,
+        parenthesisAccessOperator: 1,
+        search: 1,
+        slice: 1,
+        split: 1,
+        startsWith: 1,
+        substring: 1,
+        toLocaleLowerCase: 1,
+        toLocaleUpperCase: 1,
+        toLowerCase: 1,
+        toUpperCase: 1,
+        trim: 1,
+        trimEnd: 1,
+        trimStart: 1,
+      },
+      Array: {},
+      Object: {},
+      Map: {},
+      Set: {},
+      Number: {},
+      Boolean: {},
+      RegExp: {},
+    }
+  );
+  useCaseTest(
+    "code_types_usage_2",
+    "/code_types_usage/code_types_usage_2.ts",
+    new StatisticTypeUsageCompleteUseCase(),
+    {
+      String: {},
+      Array: {
+        at: 1,
+        parenthesisAccessOperator: 1,
+        concat: 1,
+        copyWithin: 1,
+        entries: 1,
+        every: 1,
+        fill: 1,
+        filter: 1,
+        find: 1,
+        findIndex: 1,
+        flat: 1,
+        flatMap: 1,
+        forEach: 1,
+        includes: 1,
+        indexOf: 1,
+        join: 1,
+        map: 1,
+        pop: 1,
+        push: 1,
+        reduce: 1,
+        reduceRight: 1,
+        reverse: 1,
+        shift: 1,
+        slice: 1,
+        some: 1,
+        sort: 1,
+        splice: 1,
+        unshift: 1,
+        values: 1,
+      },
+      Object: {},
+      Map: {},
+      Set: {},
+      Number: {},
+      Boolean: {},
+      RegExp: {},
+    }
+  );
+  useCaseTest(
+    "code_types_usage_3",
+    "/code_types_usage/code_types_usage_3.ts",
+    new StatisticTypeUsageCompleteUseCase(),
+    {
+      String: {},
+      Array: {},
+      Object: {},
+      Map: {},
+      Set: {},
+      Number: { toExponential: 1, toFixed: 1, toPrecision: 1 },
+      Boolean: {},
+      RegExp: {},
+    }
+  );
+});
