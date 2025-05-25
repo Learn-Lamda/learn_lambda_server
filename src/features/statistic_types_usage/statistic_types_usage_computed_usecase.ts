@@ -42,7 +42,17 @@ export interface StatisticTypeUsage {
   Object: {};
   Map: {};
   Set: {};
-  Number: {};
+  Number: {
+    toExponential?: number;
+    toFixed?: number;
+    toPrecision?: number;
+    isFinite?: number;
+    isInteger?: number;
+    isNan?: number;
+    isSafeInteger?: number;
+    parseFloat?: number;
+    parseInt?: number;
+  };
   Boolean: {};
   RegExp: {};
   String: {
@@ -110,34 +120,29 @@ export class StatisticTypeUsageCompleteUseCase {
           },
         },
       });
-
-      const translationCode = `
-      ${extensions}
-      ${
+      const transformAst = this.transformCodeByAST(
         ts.transpileModule(code, {
           compilerOptions: {
             module: ts.ModuleKind.CommonJS,
             target: ts.ScriptTarget.ES2024,
           },
         }).outputText
-      }
-      ${log}
-      `;
+      );
+      const translationCode = `${extensions}\n${transformAst}\n${log}`;
 
       return (
         await new ReadFileUseCase().call<String>(
           __dirname + "/extensions/fn.js"
         )
       ).map((fnAstParseHelper) => {
-        const [codeBody, fn] =
-          this.transformCodeByAST(translationCode).split("//${code_fn}");
+        const [codeBody, fn] = translationCode.split("//${code_fn}");
 
-        const p132 = `${codeBody}
+        const code = `${codeBody}
       ${fnAstParseHelper}
       ${fn}`;
-        
+
         try {
-          vm.run(p132);
+          vm.run(code);
         } catch (error: any) {
           // console.log(error);
         }
@@ -146,11 +151,13 @@ export class StatisticTypeUsageCompleteUseCase {
     });
   };
 
-  clearStatisticTypeUsage = (statisticTypeUsage: StatisticTypeUsage): StatisticTypeUsage => {
+  clearStatisticTypeUsage = (
+    statisticTypeUsage: StatisticTypeUsage
+  ): StatisticTypeUsage => {
     if (statisticTypeUsage.Array.join !== undefined) {
       statisticTypeUsage.Array.join = statisticTypeUsage.Array.join - 1;
     }
-    
+
     return statisticTypeUsage;
   };
   transformCodeByAST(code: string): string {
@@ -165,8 +172,120 @@ export class StatisticTypeUsageCompleteUseCase {
           },
         },
       });
+      // console.log(ast);
 
       visit(ast, {
+        visitCallExpression(path) {
+          const node = path.node;
+          // Array(1)
+          if (
+            node.callee.type === "Identifier" &&
+            node.callee.name === "Array"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("arrayParse"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+
+          // Array.from(...)
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Array" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "from"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("arrayFromParse"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+
+          // Array.isArray(...)
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Array" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "isArray"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("arrayIsArrayParse"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+
+          // Array.of(...)
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Array" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "of"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("arrayOfParse"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+          if (
+            node.callee.type === "Identifier" &&
+            (node.callee.name === "parseFloat" ||
+              node.callee.name === "parseInt")
+          ) {
+            const newName = node.callee.name + "Parse";
+            const callExpr = builders.callExpression(
+              builders.identifier(newName),
+              node.arguments
+            );
+            path.replace(callExpr);
+            return false;
+          }
+
+          // Обработка вызовов через точку, например Number.isFinite
+          if (
+            node.callee.type === "MemberExpression" &&
+            !node.callee.computed &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Number" &&
+            node.callee.property.type === "Identifier"
+          ) {
+            const propName = node.callee.property.name; // isFinite, isSafeInteger и т.д.
+            const newFuncName =
+              "number" +
+              propName.charAt(0).toUpperCase() +
+              propName.slice(1) +
+              "Parse";
+            const callExpr = builders.callExpression(
+              builders.identifier(newFuncName),
+              node.arguments
+            );
+            path.replace(callExpr);
+            return false;
+          }
+          if (
+            node.callee.type === "Identifier" &&
+            node.callee.name === "Number" &&
+            node.arguments.length === 1
+          ) {
+            const callExpr = builders.callExpression(
+              builders.identifier("numberParse"),
+              [node.arguments[0]]
+            );
+            path.replace(callExpr);
+            return false;
+          }
+          this.traverse(path);
+        },
         visitMemberExpression(path) {
           const node = path.node;
           if (node.computed) {
@@ -177,6 +296,7 @@ export class StatisticTypeUsageCompleteUseCase {
             path.replace(callExpr);
             return false;
           }
+
           if (
             !node.computed &&
             node.property.type === "Identifier" &&
@@ -189,12 +309,14 @@ export class StatisticTypeUsageCompleteUseCase {
             path.replace(callExpr);
             return false;
           }
+
           this.traverse(path);
         },
       });
-
+      // console.log(print(ast).code);
       return print(ast).code;
     } catch (e) {
+      console.log("error");
       console.log(e);
     }
   }

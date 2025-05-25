@@ -5,10 +5,10 @@ import { useCaseTest } from "../core/helper/use_case_test";
 
 extensions();
 
-describe("Static types usage", async () => {
+describe("feature statistic types usage", async () => {
   useCaseTest(
-    "code_types_usage_1",
-    "/code_types_usage/code_types_usage_1.ts",
+    "String",
+    "/code_types_usage/string.ts",
     new StatisticTypeUsageCompleteUseCase(),
     {
       String: {
@@ -53,14 +53,19 @@ describe("Static types usage", async () => {
     }
   );
   useCaseTest(
-    "code_types_usage_2",
-    "/code_types_usage/code_types_usage_2.ts",
+    "Array",
+    "/code_types_usage/array.ts",
     new StatisticTypeUsageCompleteUseCase(),
     {
       String: {},
       Array: {
         at: 1,
         parenthesisAccessOperator: 1,
+        length: 1,
+        constructorUsage: 1,
+        from: 1,
+        isArray: 1,
+        of: 1,
         concat: 1,
         copyWithin: 1,
         entries: 1,
@@ -98,8 +103,8 @@ describe("Static types usage", async () => {
     }
   );
   useCaseTest(
-    "code_types_usage_3",
-    "/code_types_usage/code_types_usage_3.ts",
+    "Number",
+    "/code_types_usage/number.ts",
     new StatisticTypeUsageCompleteUseCase(),
     {
       String: {},
@@ -107,9 +112,34 @@ describe("Static types usage", async () => {
       Object: {},
       Map: {},
       Set: {},
-      Number: { toExponential: 1, toFixed: 1, toPrecision: 1 },
+      Number: {
+        toExponential: 1,
+        toFixed: 1,
+        toPrecision: 1,
+        parseFloat: 1,
+        parseInt: 1,
+        isFinite: 1,
+        isInteger: 1,
+        isNaN: 1,
+        constructorUsage: 1,
+      },
       Boolean: {},
       RegExp: {},
     }
   );
+  // useCaseTest(
+  //   "code_types_usage_5",
+  //   "/code_types_usage/code_types_usage_4.ts",
+  //   new StatisticTypeUsageCompleteUseCase(),
+  //   {
+  //     String: {},
+  //     Array: {},
+  //     Object: {},
+  //     Map: {},
+  //     Set: {},
+  //     Number: { toExponential: 1, toFixed: 1, toPrecision: 1 },
+  //     Boolean: {},
+  //     RegExp: {},
+  //   }
+  // );
 });

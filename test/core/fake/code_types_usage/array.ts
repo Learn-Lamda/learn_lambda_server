@@ -2,6 +2,11 @@ function p2() {
   const ff = [];
   ff.at(0);
   ff[0];
+  ff.length;
+  Array(1);
+  Array.from("foo");
+  Array.isArray([1, 3, 5]);
+  Array.of("foo", "s", "bar", "d");
   ff.concat([]);
   ff.copyWithin(1, 1);
   ff.entries();
@@ -33,4 +38,3 @@ function p2() {
   ff.values();
 }
 p2();
- 

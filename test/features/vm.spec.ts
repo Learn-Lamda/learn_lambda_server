@@ -5,7 +5,7 @@ import { testEqualObject } from "../core/helper/test_equal_object";
 
 extensions();
 
-describe("Vm feature test", async () => {
+describe("feature vm feature test", async () => {
   it("vm1 ", async () => {
     let vMContext: VMContext[] | undefined;
     await new VmUseCase()
