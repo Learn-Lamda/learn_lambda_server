@@ -95,6 +95,17 @@ function elementAt(element, index) {
       parseObject.Array.parenthesisAccessOperator += 1;
     }
   }
+  if (
+    element !== null &&
+    typeof element === "object" &&
+    !Array.isArray(element)
+  ) {
+    if (parseObject.Object.parenthesisAccessOperator === undefined) {
+      parseObject.Object.parenthesisAccessOperator = 1;
+    } else {
+      parseObject.Object.parenthesisAccessOperator += 1;
+    }
+  }
   return element[index];
 }
 function lengthParse(element) {
@@ -113,4 +124,73 @@ function lengthParse(element) {
     }
   }
   return element.length;
+}
+
+function objectAssign(obj1, obj2) {
+  if (parseObject.Object.assign === undefined) {
+    parseObject.Object.assign = 1;
+  } else {
+    parseObject.Object.assign += 1;
+  }
+  return Object.assign(obj1, obj2);
+}
+function objectKeys(obj) {
+  if (parseObject.Object.keys === undefined) {
+    parseObject.Object.keys = 1;
+  } else {
+    parseObject.Object.keys += 1;
+  }
+  return Object.keys(obj);
+}
+
+function objectEntries(obj) {
+  if (parseObject.Object.entries === undefined) {
+    parseObject.Object.entries = 1;
+  } else {
+    parseObject.Object.entries += 1;
+  }
+  return Object.entries(obj);
+}
+function objectFreeze(obj) {
+  if (parseObject.Object.freeze === undefined) {
+    parseObject.Object.freeze = 1;
+  } else {
+    parseObject.Object.freeze += 1;
+  }
+  return Object.freeze(obj);
+}
+function objectSeal(obj) {
+  if (parseObject.Object.seal === undefined) {
+    parseObject.Object.seal = 1;
+  } else {
+    parseObject.Object.seal += 1;
+  }
+  return Object.seal(obj);
+}
+function objectHasOwn(obj, prop) {
+  if (parseObject.Object.hasOwn === undefined) {
+    parseObject.Object.hasOwn = 1;
+  } else {
+    parseObject.Object.hasOwn += 1;
+  }
+  return Object.hasOwn(obj, prop);
+}
+
+function sizeParse(obj) {
+  if (obj instanceof Map) {
+    if (parseObject.Map.size === undefined) {
+      parseObject.Map.size = 1;
+    } else {
+      parseObject.Map.size += 1;
+    }
+  }
+  if (obj instanceof Set) {
+    if (parseObject.Set.size === undefined) {
+      parseObject.Set.size = 1;
+    } else {
+      parseObject.Set.size += 1;
+    }
+  }
+
+  return obj.size;
 }

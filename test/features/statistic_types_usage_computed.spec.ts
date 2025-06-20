@@ -3,14 +3,27 @@ import { extensions } from "../../src/core/extensions/extensions";
 import { StatisticTypeUsageCompleteUseCase } from "../../src/features/statistic_types_usage/statistic_types_usage_computed_usecase";
 import { useCaseTest } from "../core/helper/use_case_test";
 
+const defaultTypesUsage = {
+  String: {},
+  Array: {},
+  Object: {},
+  Map: {},
+  Set: {},
+  Number: {},
+  Boolean: {},
+  RegExp: {},
+};
+
 extensions();
+const assignDefaultObject = (assign) =>
+  Object.assign(JSON.parse(JSON.stringify(defaultTypesUsage)), assign);
 
 describe("feature statistic types usage", async () => {
   useCaseTest(
     "String",
     "/code_types_usage/string.ts",
     new StatisticTypeUsageCompleteUseCase(),
-    {
+    assignDefaultObject({
       String: {
         at: 1,
         charAt: 1,
@@ -43,21 +56,17 @@ describe("feature statistic types usage", async () => {
         trimEnd: 1,
         trimStart: 1,
       },
-      Array: {},
-      Object: {},
-      Map: {},
-      Set: {},
-      Number: {},
-      Boolean: {},
-      RegExp: {},
-    }
+      RegExp: {
+        // match: 0,
+        exec: 0,
+      },
+    })
   );
   useCaseTest(
     "Array",
     "/code_types_usage/array.ts",
     new StatisticTypeUsageCompleteUseCase(),
-    {
-      String: {},
+    assignDefaultObject({
       Array: {
         at: 1,
         parenthesisAccessOperator: 1,
@@ -94,24 +103,13 @@ describe("feature statistic types usage", async () => {
         unshift: 1,
         values: 1,
       },
-      Object: {},
-      Map: {},
-      Set: {},
-      Number: {},
-      Boolean: {},
-      RegExp: {},
-    }
+    })
   );
   useCaseTest(
     "Number",
     "/code_types_usage/number.ts",
     new StatisticTypeUsageCompleteUseCase(),
-    {
-      String: {},
-      Array: {},
-      Object: {},
-      Map: {},
-      Set: {},
+    assignDefaultObject({
       Number: {
         toExponential: 1,
         toFixed: 1,
@@ -123,23 +121,69 @@ describe("feature statistic types usage", async () => {
         isNaN: 1,
         constructorUsage: 1,
       },
-      Boolean: {},
-      RegExp: {},
-    }
+    })
   );
-  // useCaseTest(
-  //   "code_types_usage_5",
-  //   "/code_types_usage/code_types_usage_4.ts",
-  //   new StatisticTypeUsageCompleteUseCase(),
-  //   {
-  //     String: {},
-  //     Array: {},
-  //     Object: {},
-  //     Map: {},
-  //     Set: {},
-  //     Number: { toExponential: 1, toFixed: 1, toPrecision: 1 },
-  //     Boolean: {},
-  //     RegExp: {},
-  //   }
-  // );
+  useCaseTest(
+    "Object",
+    "/code_types_usage/object.ts",
+    new StatisticTypeUsageCompleteUseCase(),
+    assignDefaultObject({
+      Object: {
+        assign: 1,
+        keys: 1,
+        entries: 1,
+        freeze: 1,
+        seal: 1,
+        hasOwn: 1,
+        parenthesisAccessOperator: 1,
+      },
+    })
+  );
+  useCaseTest(
+    "RegExp",
+    "/code_types_usage/reg_exp.ts",
+    new StatisticTypeUsageCompleteUseCase(),
+    assignDefaultObject({
+      RegExp: {
+        test: 2,
+        exec: 2,
+      },
+    })
+  );
+  useCaseTest(
+    "Map",
+    "/code_types_usage/map.ts",
+    new StatisticTypeUsageCompleteUseCase(),
+    assignDefaultObject({
+      Map: {
+        clear: 1,
+        delete: 1,
+        entries: 1,
+        forEach: 1,
+        get: 1,
+        has: 1,
+        keys: 1,
+        set: 1,
+        size: 1,
+      },
+    })
+  );
+  useCaseTest(
+    "Set",
+    "/code_types_usage/set.ts",
+    new StatisticTypeUsageCompleteUseCase(),
+    assignDefaultObject({
+      Set: {
+        add: 1,
+        clear: 1,
+        delete: 1,
+        entries: 1,
+        forEach: 1,
+        has: 1,
+        keys: 1,
+        values: 1,
+        size: 1,
+      },
+    })
+  );
 });

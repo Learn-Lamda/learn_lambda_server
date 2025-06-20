@@ -6,6 +6,28 @@ import { ResponseBase } from "../../core/controllers/http_controller";
 import { parse, print } from "recast";
 import * as babelParser from "@babel/parser";
 import { visit, builders } from "ast-types";
+import { SaveFileUseCase } from "../../core/usecases/save_file_usecase";
+export interface _CallExpression {
+  type: Type;
+  value: string;
+  loc: LOC;
+}
+
+export interface LOC {
+  start: End;
+  end: End;
+}
+
+export interface End {
+  line: number;
+  column: number;
+}
+
+export enum Type {
+  Identifier = "Identifier",
+  Punctuator = "Punctuator",
+  String = "String",
+}
 
 export interface StatisticTypeUsage {
   Array: {
@@ -39,7 +61,15 @@ export interface StatisticTypeUsage {
     unshift?: number;
     values?: number;
   };
-  Object: {};
+  Object: {
+    assign?: number;
+    keys?: number;
+    entries?: number;
+    freeze?: number;
+    seal?: number;
+    hasOwn?: number;
+    parenthesisAccessOperator?: number;
+  };
   Map: {};
   Set: {};
   Number: {
@@ -140,11 +170,16 @@ export class StatisticTypeUsageCompleteUseCase {
         const code = `${codeBody}
       ${fnAstParseHelper}
       ${fn}`;
-
+        // new SaveFileUseCase().call({
+        //   filename: "123.txt",
+        //   content: code,
+        //   directory:
+        //     "/Users/idontsudo/lamda/learn_lamda_server/src/features/statistic_types_usage/",
+        // });
         try {
           vm.run(code);
         } catch (error: any) {
-          // console.log(error);
+          console.log(error);
         }
         return Result.ok(this.clearStatisticTypeUsage(statisticTypeUsage));
       });
@@ -172,12 +207,11 @@ export class StatisticTypeUsageCompleteUseCase {
           },
         },
       });
-      // console.log(ast);
 
       visit(ast, {
         visitCallExpression(path) {
           const node = path.node;
-          // Array(1)
+
           if (
             node.callee.type === "Identifier" &&
             node.callee.name === "Array"
@@ -190,7 +224,91 @@ export class StatisticTypeUsageCompleteUseCase {
             return false;
           }
 
-          // Array.from(...)
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Object" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "hasOwn"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("objectHasOwn"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Object" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "seal"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("objectSeal"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Object" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "freeze"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("objectFreeze"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Object" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "entries"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("objectEntries"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Object" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "keys"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("objectKeys"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+          if (
+            node.callee.type === "MemberExpression" &&
+            node.callee.object.type === "Identifier" &&
+            node.callee.object.name === "Object" &&
+            node.callee.property.type === "Identifier" &&
+            node.callee.property.name === "assign"
+          ) {
+            const newCall = builders.callExpression(
+              builders.identifier("objectAssign"),
+              node.arguments
+            );
+            path.replace(newCall);
+            return false;
+          }
+
           if (
             node.callee.type === "MemberExpression" &&
             node.callee.object.type === "Identifier" &&
@@ -206,7 +324,6 @@ export class StatisticTypeUsageCompleteUseCase {
             return false;
           }
 
-          // Array.isArray(...)
           if (
             node.callee.type === "MemberExpression" &&
             node.callee.object.type === "Identifier" &&
@@ -222,7 +339,6 @@ export class StatisticTypeUsageCompleteUseCase {
             return false;
           }
 
-          // Array.of(...)
           if (
             node.callee.type === "MemberExpression" &&
             node.callee.object.type === "Identifier" &&
@@ -237,6 +353,7 @@ export class StatisticTypeUsageCompleteUseCase {
             path.replace(newCall);
             return false;
           }
+
           if (
             node.callee.type === "Identifier" &&
             (node.callee.name === "parseFloat" ||
@@ -250,8 +367,6 @@ export class StatisticTypeUsageCompleteUseCase {
             path.replace(callExpr);
             return false;
           }
-
-          // Обработка вызовов через точку, например Number.isFinite
           if (
             node.callee.type === "MemberExpression" &&
             !node.callee.computed &&
@@ -296,7 +411,18 @@ export class StatisticTypeUsageCompleteUseCase {
             path.replace(callExpr);
             return false;
           }
-
+          if (
+            !node.computed &&
+            node.property.type === "Identifier" &&
+            node.property.name === "size"
+          ) {
+            const callExpr = builders.callExpression(
+              builders.identifier("sizeParse"),
+              [node.object]
+            );
+            path.replace(callExpr);
+            return false;
+          }
           if (
             !node.computed &&
             node.property.type === "Identifier" &&
@@ -313,7 +439,7 @@ export class StatisticTypeUsageCompleteUseCase {
           this.traverse(path);
         },
       });
-      // console.log(print(ast).code);
+
       return print(ast).code;
     } catch (e) {
       console.log("error");

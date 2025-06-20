@@ -1,7 +1,12 @@
 const parseObject = {
   String: {},
   Array: {},
+  Object: {},
+  Map: {},
+  Set: {},
   Number: {},
+  Boolean: {},
+  RegExp: {},
 };
 
 //${code_fn}
@@ -38,7 +43,6 @@ const toUpperCase = String.prototype.toUpperCase;
 const trim = String.prototype.trim;
 const trimEnd = String.prototype.trimEnd;
 const trimStart = String.prototype.trimStart;
-
 
 // Number
 const numberToExponential = Number.prototype.toExponential;
@@ -77,21 +81,18 @@ const arraySplice = Array.prototype.splice;
 
 const arrayUnshift = Array.prototype.unshift;
 const arrayValues = Array.prototype.values;
-// Boolean
-const booleanValueOf = Boolean.prototype.valueOf;
+
 // Map
-const clear = Map.prototype.clear;
+const mapClear = Map.prototype.clear;
 const mapDelete = Map.prototype.delete;
 const mapEntries = Map.prototype.entries;
 const mapForEach = Map.prototype.forEach;
 const mapGet = Map.prototype.get;
-const has = Map.prototype.has;
+const mapHas = Map.prototype.has;
 const mapKeys = Map.prototype.keys;
 const mapSet = Map.prototype.set;
-// const mapSize = Map.prototype.size;
-const mapValues = Map.prototype.values;
 // Set
-const add = Set.prototype.add;
+const setAdd = Set.prototype.add;
 const setClear = Set.prototype.clear;
 const setDelete = Set.prototype.delete;
 const setEntries = Set.prototype.entries;
@@ -100,14 +101,10 @@ const setHas = Set.prototype.has;
 const setKeys = Set.prototype.keys;
 // const setSize = Set.prototype.size;
 const setValues = Set.prototype.values;
-// Object
-const objectEntries = Object.entries;
-const objectKeys = Object.keys;
-const objectAssign = Object.assign;
-const objectValues = Object.values;
+
 // RegExp
-const exec = RegExp.prototype.exec;
-const t = RegExp.prototype.test;
+const regExpTest = RegExp.prototype.test;
+const regExpExec = RegExp.prototype.exec;
 
 String.prototype.at = function (pos) {
   if (parseObject.String.at === undefined) {
@@ -190,7 +187,11 @@ String.prototype.match = function (regexp) {
   } else {
     parseObject.String.match += 1;
   }
-  return match.call(this, regexp);
+  const result = match.call(this, regexp);
+  if (parseObject.RegExp.exec !== undefined) {
+    parseObject.RegExp.exec -= 2;
+  }
+  return result;
 };
 String.prototype.charAt = function (pos) {
   if (parseObject.String.charAt === undefined) {
@@ -357,7 +358,6 @@ String.prototype.trimStart = function () {
   }
   return trimStart.call(this);
 };
- 
 
 Array.prototype.at = function (index) {
   if (parseObject.Array.at === undefined) {
@@ -656,7 +656,156 @@ Number.prototype.toPrecision = function () {
   }
   return numberToPrecision.call(this);
 };
+RegExp.prototype.test = function (arg) {
+  if (parseObject.RegExp.test === undefined) {
+    parseObject.RegExp.test = 1;
+    parseObject.RegExp.exec;
+  } else {
+    parseObject.RegExp.test += 1;
+  }
+  const result = regExpTest.call(this, arg);
+  if (parseObject.RegExp.exec !== undefined) {
+    parseObject.RegExp.exec -= 1;
+  }
+  return result;
+};
+RegExp.prototype.exec = function (arg) {
+  if (parseObject.RegExp.exec === undefined) {
+    parseObject.RegExp.exec = 1;
+  } else {
+    parseObject.RegExp.exec += 1;
+  }
+  return regExpExec.call(this, arg);
+};
 
+Map.prototype.clear = function () {
+  if (parseObject.Map.clear === undefined) {
+    parseObject.Map.clear = 1;
+  } else {
+    parseObject.Map.clear += 1;
+  }
+  return mapClear.call(this);
+};
+Map.prototype.delete = function (arg) {
+  if (parseObject.Map.delete === undefined) {
+    parseObject.Map.delete = 1;
+  } else {
+    parseObject.Map.delete += 1;
+  }
+  return mapDelete.call(this, arg);
+};
+Map.prototype.entries = function () {
+  if (parseObject.Map.entries === undefined) {
+    parseObject.Map.entries = 1;
+  } else {
+    parseObject.Map.entries += 1;
+  }
+  return mapEntries.call(this);
+};
+Map.prototype.forEach = function (arg) {
+  if (parseObject.Map.forEach === undefined) {
+    parseObject.Map.forEach = 1;
+  } else {
+    parseObject.Map.forEach += 1;
+  }
+  return mapForEach.call(this, arg);
+};
+Map.prototype.get = function (arg) {
+  if (parseObject.Map.get === undefined) {
+    parseObject.Map.get = 1;
+  } else {
+    parseObject.Map.get += 1;
+  }
+  return mapGet.call(this, arg);
+};
+Map.prototype.has = function (arg) {
+  if (parseObject.Map.has === undefined) {
+    parseObject.Map.has = 1;
+  } else {
+    parseObject.Map.has += 1;
+  }
+  return mapHas.call(this, arg);
+};
+Map.prototype.keys = function () {
+  if (parseObject.Map.keys === undefined) {
+    parseObject.Map.keys = 1;
+  } else {
+    parseObject.Map.keys += 1;
+  }
+  return mapKeys.call(this);
+};
+Map.prototype.set = function (arg, arg2) {
+  if (parseObject.Map.set === undefined) {
+    parseObject.Map.set = 1;
+  } else {
+    parseObject.Map.set += 1;
+  }
+  return mapSet.call(this, arg, arg2);
+};
+Set.prototype.add = function (arg) {
+  if (parseObject.Set.add === undefined) {
+    parseObject.Set.add = 1;
+  } else {
+    parseObject.Set.add += 1;
+  }
+  return setAdd.call(this, arg);
+};
+Set.prototype.clear = function () {
+  if (parseObject.Set.clear === undefined) {
+    parseObject.Set.clear = 1;
+  } else {
+    parseObject.Set.clear += 1;
+  }
+  return setClear.call(this);
+};
+Set.prototype.delete = function (arg) {
+  if (parseObject.Set.delete === undefined) {
+    parseObject.Set.delete = 1;
+  } else {
+    parseObject.Set.delete += 1;
+  }
+  return setDelete.call(this, arg);
+};
+Set.prototype.entries = function () {
+  if (parseObject.Set.entries === undefined) {
+    parseObject.Set.entries = 1;
+  } else {
+    parseObject.Set.entries += 1;
+  }
+  return setEntries.call(this);
+};
+Set.prototype.forEach = function (arg) {
+  if (parseObject.Set.forEach === undefined) {
+    parseObject.Set.forEach = 1;
+  } else {
+    parseObject.Set.forEach += 1;
+  }
+  return setForeach.call(this, arg);
+};
+Set.prototype.has = function (arg) {
+  if (parseObject.Set.has === undefined) {
+    parseObject.Set.has = 1;
+  } else {
+    parseObject.Set.has += 1;
+  }
+  return setHas.call(this, arg);
+};
+Set.prototype.keys = function () {
+  if (parseObject.Set.keys === undefined) {
+    parseObject.Set.keys = 1;
+  } else {
+    parseObject.Set.keys += 1;
+  }
+  return setKeys.call(this);
+};
+Set.prototype.values = function () {
+  if (parseObject.Set.values === undefined) {
+    parseObject.Set.values = 1;
+  } else {
+    parseObject.Set.values += 1;
+  }
+  return setValues.call(this);
+};
 //${code}
 
 console.log({ parseObject: parseObject });

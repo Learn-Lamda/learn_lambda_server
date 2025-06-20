@@ -9,4 +9,9 @@ extensions();
 
 const socketSubscribers: SocketSubscriber<any>[] = [];
 
-new App(httpRoutes.map((el) => el.call()), socketSubscribers).listen();
+new App(
+  httpRoutes.map((el) => el.call()),
+  socketSubscribers
+).listen();
+
+
