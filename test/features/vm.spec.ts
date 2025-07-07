@@ -1,5 +1,5 @@
 import { extensions } from "../../src/core/extensions/extensions";
-import { VMContext, VmUseCase } from "../../src/features/vm/vm_controller";
+import { VMContext, VmUseCase } from "../../src/features/vm/vm";
 import { getFake } from "../core/helper/get_fake";
 import { testEqualObject } from "../core/helper/test_equal_object";
 

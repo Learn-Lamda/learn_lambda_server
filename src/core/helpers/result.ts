@@ -34,7 +34,11 @@ function syncThenable(): SyncThenable {
   };
 }
 
-function forEachValueThunkOrPromise<T>(items: unknown[], execFn: (value: T) => boolean, foldFn: () => unknown) {
+function forEachValueThunkOrPromise<T>(
+  items: unknown[],
+  execFn: (value: T) => boolean,
+  foldFn: () => unknown
+) {
   let shouldBreak = false;
 
   const result: any = items.reduce((prev: { then: Function }, valueOrThunk) => {
@@ -50,7 +54,8 @@ function forEachValueThunkOrPromise<T>(items: unknown[], execFn: (value: T) => b
         }
       }
 
-      const valueOrPromise = typeof valueOrThunk === "function" ? valueOrThunk() : valueOrThunk;
+      const valueOrPromise =
+        typeof valueOrThunk === "function" ? valueOrThunk() : valueOrThunk;
 
       if (valueOrPromise instanceof Promise) {
         return valueOrPromise.then(run);
@@ -69,9 +74,11 @@ function forEachValueThunkOrPromise<T>(items: unknown[], execFn: (value: T) => b
   });
 }
 
-export type Result<ErrorType, OkType, RollbackFn extends RollbackFunction = any> =
-  | Ok<ErrorType, OkType, RollbackFn>
-  | Err<ErrorType, OkType, RollbackFn>;
+export type Result<
+  ErrorType,
+  OkType,
+  RollbackFn extends RollbackFunction = any
+> = Ok<ErrorType, OkType, RollbackFn> | Err<ErrorType, OkType, RollbackFn>;
 
 interface IResult<ErrorType, OkType> {
   isSuccess(): this is Ok<ErrorType, OkType, any>;
@@ -84,8 +91,14 @@ interface IResult<ErrorType, OkType> {
 
   inspect(): string;
 
-  fold<R>(onSuccess: (value: OkType) => R, onFailure: (error: ErrorType) => R): R;
-  fold<R>(onSuccess: (value: OkType) => Promise<R>, onFailure: (error: ErrorType) => Promise<R>): Promise<R>;
+  fold<R>(
+    onSuccess: (value: OkType) => R,
+    onFailure: (error: ErrorType) => R
+  ): R;
+  fold<R>(
+    onSuccess: (value: OkType) => Promise<R>,
+    onFailure: (error: ErrorType) => Promise<R>
+  ): Promise<R>;
 
   getOrDefault(defaultValue: OkType): OkType;
 
@@ -96,17 +109,37 @@ interface IResult<ErrorType, OkType> {
 
   map<T>(
     fn: (value: OkType) => Promise<T>
-  ): Promise<JoinErrorTypes<ErrorType, T extends Result<any, any, any> ? T : Result<Error, T, any>>>;
+  ): Promise<
+    JoinErrorTypes<
+      ErrorType,
+      T extends Result<any, any, any> ? T : Result<Error, T, any>
+    >
+  >;
   map<T>(
     fn: (value: OkType) => T
-  ): JoinErrorTypes<ErrorType, T extends Result<any, any, any> ? T : Result<Error, T, any>>;
+  ): JoinErrorTypes<
+    ErrorType,
+    T extends Result<any, any, any> ? T : Result<Error, T, any>
+  >;
 
   rollback(): Result<Error, void> | Promise<Result<Error, void>>;
 }
 
-type InferErrorType<T extends Result<any, any, any>> = T extends Result<infer Errortype, any, any> ? Errortype : never;
+type InferErrorType<T extends Result<any, any, any>> = T extends Result<
+  infer Errortype,
+  any,
+  any
+>
+  ? Errortype
+  : never;
 
-type InferOkType<T extends Result<any, any, any>> = T extends Result<any, infer OkType, any> ? OkType : never;
+type InferOkType<T extends Result<any, any, any>> = T extends Result<
+  any,
+  infer OkType,
+  any
+>
+  ? OkType
+  : never;
 
 type JoinErrorTypes<ErrorType, B extends Result<any, any, any>> = Result<
   ErrorType | InferErrorType<B>,
@@ -115,11 +148,15 @@ type JoinErrorTypes<ErrorType, B extends Result<any, any, any>> = Result<
 >;
 
 type ExtractErrorTypes<Tuple extends any[]> = {
-  [Index in keyof Tuple]: Tuple[Index] extends Result<any, any, any> ? InferErrorType<Tuple[Index]> : never;
+  [Index in keyof Tuple]: Tuple[Index] extends Result<any, any, any>
+    ? InferErrorType<Tuple[Index]>
+    : never;
 }[number];
 
 type MapResultTupleToOkTypeTuple<Tuple extends any[]> = {
-  [Index in keyof Tuple]: Tuple[Index] extends Result<any, any, any> ? InferOkType<Tuple[Index]> : never;
+  [Index in keyof Tuple]: Tuple[Index] extends Result<any, any, any>
+    ? InferOkType<Tuple[Index]>
+    : never;
 };
 
 type RollbackFunction = (() => void) | (() => Promise<void>);
@@ -135,7 +172,11 @@ type HasAsyncRollbackFunction<T extends any[]> = {
   : true;
 
 type UnwrapThunks<T extends any[]> = {
-  [Index in keyof T]: T[Index] extends () => Promise<infer U> ? U : T[Index] extends () => infer U ? U : T[Index];
+  [Index in keyof T]: T[Index] extends () => Promise<infer U>
+    ? U
+    : T[Index] extends () => infer U
+    ? U
+    : T[Index];
 };
 
 type HasAsyncThunk<T extends any[]> = {
@@ -144,17 +185,32 @@ type HasAsyncThunk<T extends any[]> = {
   ? false
   : true;
 
-type PromiseReturnType<T extends (...args: any) => any> = T extends (...args: any) => Promise<infer U> ? U : never;
+type PromiseReturnType<T extends (...args: any) => any> = T extends (
+  ...args: any
+) => Promise<infer U>
+  ? U
+  : never;
 
 export namespace Result {
-  export function ok<ErrorType extends unknown, OkType, RollbackFn extends RollbackFunction = any>(
+  export function ok<
+    ErrorType extends unknown,
+    OkType,
+    RollbackFn extends RollbackFunction = any
+  >(
     value?: OkType,
     rollbackFn?: RollbackFn
   ): Result<ErrorType, OkType, RollbackFn> {
-    return new Ok<ErrorType, OkType, RollbackFn>(value || null!, rollbackFn) as any;
+    return new Ok<ErrorType, OkType, RollbackFn>(
+      value || null!,
+      rollbackFn
+    ) as any;
   }
 
-  export function error<ErrorType extends unknown, OkType extends unknown, RollbackFn extends RollbackFunction = any>(
+  export function error<
+    ErrorType extends unknown,
+    OkType extends unknown,
+    RollbackFn extends RollbackFunction = any
+  >(
     error: ErrorType,
     rollbackFn?: RollbackFn
   ): Result<ErrorType, OkType, RollbackFn> {
@@ -165,7 +221,9 @@ export namespace Result {
     ? Result<E | InferErrorType<T>, InferOkType<T>, never>
     : Result<E, T, never>;
 
-  export function safe<T>(fn: () => Promise<T>): Promise<SafeReturnType<Error, T>>;
+  export function safe<T>(
+    fn: () => Promise<T>
+  ): Promise<SafeReturnType<Error, T>>;
   export function safe<T>(fn: () => T): SafeReturnType<Error, T>;
   export function safe<ErrorType, T>(
     err: ErrorType | (new (...args: any[]) => ErrorType),
@@ -203,21 +261,29 @@ export namespace Result {
           .catch((caughtError) => error(getError(caughtError)));
       }
 
-      return isResult(resultOrPromise) ? resultOrPromise : Result.ok(resultOrPromise);
+      return isResult(resultOrPromise)
+        ? resultOrPromise
+        : Result.ok(resultOrPromise);
     } catch (caughtError) {
       return error(getError(caughtError as Error));
     }
   }
 
-  type CombineResult<T extends (unknown | (() => unknown) | (() => Promise<unknown>))[]> = Result<
+  type CombineResult<
+    T extends (unknown | (() => unknown) | (() => Promise<unknown>))[]
+  > = Result<
     ExtractErrorTypes<UnwrapThunks<T>>,
     MapResultTupleToOkTypeTuple<UnwrapThunks<T>>,
     HasAsyncRollbackFunction<T> extends true ? () => Promise<void> : () => void
   >;
 
-  export function combine<T extends (unknown | (() => unknown) | (() => Promise<unknown>))[]>(
+  export function combine<
+    T extends (unknown | (() => unknown) | (() => Promise<unknown>))[]
+  >(
     ...items: T
-  ): HasAsyncThunk<T> extends true ? Promise<CombineResult<T>> : CombineResult<T> {
+  ): HasAsyncThunk<T> extends true
+    ? Promise<CombineResult<T>>
+    : CombineResult<T> {
     if (!items.length) {
       throw new Error("Expected at least 1 argument");
     }
@@ -264,7 +330,9 @@ export namespace Result {
 
   export function wrap<Fn extends (...args: any) => Promise<any>>(
     fn: Fn
-  ): (...args: Parameters<Fn>) => Promise<Result<Error, PromiseReturnType<Fn>, never>>;
+  ): (
+    ...args: Parameters<Fn>
+  ) => Promise<Result<Error, PromiseReturnType<Fn>, never>>;
   export function wrap<Fn extends (...args: any) => any>(
     fn: Fn
   ): (...args: Parameters<Fn>) => Result<Error, ReturnType<Fn>, never>;
@@ -274,7 +342,9 @@ export namespace Result {
         const resultOrPromise = fn(...args);
 
         if (resultOrPromise instanceof Promise) {
-          return resultOrPromise.then((okValue) => Result.ok(okValue)).catch((err) => error(err));
+          return resultOrPromise
+            .then((okValue) => Result.ok(okValue))
+            .catch((err) => error(err));
         }
 
         return ok(resultOrPromise);
@@ -283,10 +353,28 @@ export namespace Result {
       }
     };
   }
+
+  export function isNotNull<
+    ErrorType extends unknown,
+    OkType,
+    RollbackFn extends RollbackFunction = any
+  >(
+    value?: OkType,
+    rollbackFn?: RollbackFn
+  ): Result<ErrorType, OkType, RollbackFn> {
+    if (value === null) {
+      return Result.error(null);
+    } else {
+      return Result.ok(value);
+    }
+  }
 }
 
-abstract class Base<ErrorType extends unknown, OkType extends unknown, RollbackFn extends RollbackFunction>
-  implements IResult<ErrorType, OkType>
+abstract class Base<
+  ErrorType extends unknown,
+  OkType extends unknown,
+  RollbackFn extends RollbackFunction
+> implements IResult<ErrorType, OkType>
 {
   constructor(protected readonly rollbackFn?: RollbackFn) {}
 
@@ -313,8 +401,14 @@ abstract class Base<ErrorType extends unknown, OkType extends unknown, RollbackF
     return this.toString();
   }
 
-  fold<R>(onSuccess: (value: OkType) => R, onFailure: (error: ErrorType) => R): R;
-  fold<R>(onSuccess: (value: OkType) => Promise<R>, onFailure: (error: ErrorType) => Promise<R>): Promise<R>;
+  fold<R>(
+    onSuccess: (value: OkType) => R,
+    onFailure: (error: ErrorType) => R
+  ): R;
+  fold<R>(
+    onSuccess: (value: OkType) => Promise<R>,
+    onFailure: (error: ErrorType) => Promise<R>
+  ): Promise<R>;
   fold(onSuccess: any, onFailure: any) {
     if (this.isFailure()) {
       return onFailure(this.error);
@@ -358,10 +452,18 @@ abstract class Base<ErrorType extends unknown, OkType extends unknown, RollbackF
 
   map<T>(
     fn: (value: OkType) => Promise<T>
-  ): Promise<JoinErrorTypes<ErrorType, T extends Result<any, any, any> ? T : Result<Error, T, any>>>;
+  ): Promise<
+    JoinErrorTypes<
+      ErrorType,
+      T extends Result<any, any, any> ? T : Result<Error, T, any>
+    >
+  >;
   map<T>(
     fn: (value: OkType) => T
-  ): JoinErrorTypes<ErrorType, T extends Result<any, any, any> ? T : Result<Error, T, any>>;
+  ): JoinErrorTypes<
+    ErrorType,
+    T extends Result<any, any, any> ? T : Result<Error, T, any>
+  >;
   map(fn: any) {
     if (this.isFailure()) {
       return isAsyncFn(fn) ? Promise.resolve(this) : this;
@@ -385,11 +487,11 @@ abstract class Base<ErrorType extends unknown, OkType extends unknown, RollbackF
   }
 }
 
-class Ok<ErrorType extends unknown, OkType extends unknown, RollbackFn extends RollbackFunction> extends Base<
-  ErrorType,
-  OkType,
-  RollbackFn
-> {
+class Ok<
+  ErrorType extends unknown,
+  OkType extends unknown,
+  RollbackFn extends RollbackFunction
+> extends Base<ErrorType, OkType, RollbackFn> {
   public readonly value: OkType;
 
   constructor(val: OkType, rollbackFn?: RollbackFn) {
@@ -414,11 +516,11 @@ class Ok<ErrorType extends unknown, OkType extends unknown, RollbackFn extends R
   }
 }
 
-class Err<ErrorType extends unknown, OkType extends unknown, RollbackFn extends RollbackFunction> extends Base<
-  ErrorType,
-  OkType,
-  RollbackFn
-> {
+class Err<
+  ErrorType extends unknown,
+  OkType extends unknown,
+  RollbackFn extends RollbackFunction
+> extends Base<ErrorType, OkType, RollbackFn> {
   public readonly error: ErrorType;
 
   constructor(err: ErrorType, rollbackFn?: RollbackFn) {

@@ -2,7 +2,6 @@
   "name": "learn_lamda_server",
   "version": "1.0.0",
   "main": "index.js",
- 
   "scripts": {
     "test": "npx jest",
     "test:watch": "nodemon --watch ./ --ext ts --exec \"mocha -r ts-node/register 'test/**/*.spec.ts'\"",
@@ -35,12 +34,14 @@
     "@babel/types": "^7.27.1",
     "@prisma/client": "^6.3.1",
     "ast-types": "^0.16.1",
+    "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cors": "^2.8.5",
     "error-stack-parser": "^2.1.4",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
+    "jsonwebtoken": "^9.0.2",
     "recast": "^0.23.11",
     "reflect-metadata": "^0.2.2",
     "rimraf": "^6.0.1",

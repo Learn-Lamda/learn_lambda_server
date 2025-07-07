@@ -129,12 +129,12 @@ export class VmUseCase {
 }
 
 export class RunVm extends CallbackStrategyWithValidationModel<VmValidationModel> {
-  validationModel: VmValidationModel = new VmValidationModel();
+  validationModel = VmValidationModel;
   async call(model: VmValidationModel): ResponseBase {
     return Result.ok(new VmUseCase().call(model.code));
   }
 }
-export class VmController extends CoreHttpController<VmValidationModel> {
+export class VmFeature extends CoreHttpController<VmValidationModel> {
   constructor() {
     super({ url: "vm", validationModel: VmValidationModel });
 

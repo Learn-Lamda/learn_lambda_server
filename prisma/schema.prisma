@@ -13,33 +13,25 @@ datasource db {
 model User {
   id       Int        @id @default(autoincrement())
   email    String     @unique
-  name     String?
-  posts    Post[]
+  login String @unique
+  password String
   Solution Solution[]
 }
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User    @relation(fields: [authorId], references: [id])
-  authorId  Int
-}
+  model Task {
+    id             Int          @id @default(autoincrement())
+    name           String
+    description    String
+    code           String
+    test           String
+    complexity     Int 
+    solutions Solution[]
+  }
 
-model Task {
-  id             Int        @id @default(autoincrement())
-  name           String
-  description    String
-  code           String
-  test           String
-  complexity     Int //1-5
-  uniqueSolution Solution[]
-}
-
-model Solution {
-  id       Int    @id @default(autoincrement())
-  Task     Task[]
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId Int
-}
+  model Solution {
+    id       Int    @id @default(autoincrement())
+    Task     Task   @relation(fields: [taskId], references: [id])
+    author   User   @relation(fields: [authorId], references: [id])
+    authorId Int
+    taskId Int
+  }
