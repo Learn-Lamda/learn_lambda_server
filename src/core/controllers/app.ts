@@ -7,7 +7,7 @@ import { dirname } from "path";
 import { TypedEvent } from "../helpers/typed_event";
 import { Routes } from "../models/routes";
 import { SocketSubscriber } from "./socket_controller";
-import { userValidationMiddleware } from "../middlewares/validation_user_auth";
+import { validationMiddleware } from "../middlewares/validation_user_auth";
 
 export enum ServerStatus {
   init = "init",

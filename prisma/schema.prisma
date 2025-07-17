@@ -1,37 +1,50 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
-
 model User {
-  id       Int        @id @default(autoincrement())
-  email    String     @unique
-  login String @unique
-  password String
-  Solution Solution[]
+  id         Int        @id @default(autoincrement())
+  email      String     @unique
+  login      String     @unique
+  password   String
+  Solution   Solution[]
+  createDate DateTime   @default(now())
 }
 
-  model Task {
-    id             Int          @id @default(autoincrement())
-    name           String
-    description    String
-    code           String
-    test           String
-    complexity     Int 
-    solutions Solution[]
-  }
+model Task {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  code        String
+  test        String
+  complexity  Int
+  solutions   Solution[]
+  createDate  DateTime   @default(now())
+}
 
-  model Solution {
-    id       Int    @id @default(autoincrement())
-    Task     Task   @relation(fields: [taskId], references: [id])
-    author   User   @relation(fields: [authorId], references: [id])
-    authorId Int
-    taskId Int
-  }
+model Solution {
+  id         Int      @id @default(autoincrement())
+  Task       Task     @relation(fields: [taskId], references: [id])
+  author     User     @relation(fields: [authorId], references: [id])
+  authorId   Int
+  taskId     Int
+  createDate DateTime @default(now())
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  login    String @unique
+  password String
+}
+
+model SelectAllTask {
+  id         Int       @id @default(autoincrement())
+  lastUpdate DateTime?
+  createDate DateTime  @default(now())
+
+}

@@ -9,8 +9,8 @@ import {
 import { Result } from "../../core/helpers/result";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
 
-export const SECRET_KEY = "your_secret_key";
 const saltRounds = 10;
 
 export class User {
@@ -22,7 +22,7 @@ export class User {
 export interface Payload {
   userId: string;
 }
-export class Login extends CallbackStrategyWithValidationModel<User> {
+export class LoginUser extends CallbackStrategyWithValidationModel<User> {
   error = "Error";
   validationModel = User;
   call = async (model: User): ResponseBase =>
@@ -34,7 +34,7 @@ export class Login extends CallbackStrategyWithValidationModel<User> {
           return Result.ok({
             token: jwt.sign(
               { userId: databaseModel.id.toString() },
-              SECRET_KEY
+              process.env.USER_JWT_SECRET
             ),
           });
         }
@@ -54,12 +54,36 @@ export class RegistrationModel {
   password: string;
 }
 
-export class Registration extends CallbackStrategyWithValidationModel<RegistrationModel> {
+export class Registration extends CallbackStrategyWithValidationModel<User> {
+  validationModel = User;
+  error = "Error";
+
+  call = async (model: User): ResponseBase =>
+    Result.isNotNull(
+      await this.client.admin.findFirst({ where: { login: model.login } })
+    ).fold(
+      async (databaseModel) => {
+        if (await bcrypt.compare(model.password, databaseModel.password)) {
+          return Result.ok({
+            token: jwt.sign(
+              { userId: databaseModel.id.toString() },
+              process.env.ADMIN_JWT_SECRET
+            ),
+          });
+        }
+        return Result.error(this.error);
+      },
+      async () => {
+        return Result.ok(this.error);
+      }
+    );
+}
+export class LoginAdmin extends CallbackStrategyWithValidationModel<RegistrationModel> {
   validationModel = RegistrationModel;
   call = async (model: RegistrationModel): ResponseBase =>
     Result.isNotNull(
-      await this.client.user.findFirst({
-        where: { email: model.email },
+      await this.client.admin.findFirst({
+        where: { login: model.login },
       })
     ).fold(
       async (_) => Result.error("User is Registered"),
@@ -76,12 +100,22 @@ export class Registration extends CallbackStrategyWithValidationModel<Registrati
     );
 }
 
+export class NewAdmin {
+  call = async () => {
+    await new PrismaClient().admin.create({
+      data: { login: "123", password: "123`" },
+    });
+    console.log("new admin");
+  };
+}
+
 export class AuthorizationFeature extends FeatureHttpController {
   constructor() {
     super();
     this.subRoutes = [
-      new SubRouter("/login", new Login(), AccessLevel.public),
+      new SubRouter("/login", new LoginUser(), AccessLevel.public),
       new SubRouter("/registration", new Registration(), AccessLevel.public),
+      new SubRouter("/admin/login", new LoginUser(), AccessLevel.public),
     ];
   }
 }

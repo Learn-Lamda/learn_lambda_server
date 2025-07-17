@@ -15,9 +15,8 @@ import {
   ISubSetFeatureRouter,
   valid,
 } from "./http_controller";
-import { userValidationMiddleware } from "../middlewares/validation_user_auth";
-import { adminValidationMiddleware } from "../middlewares/validation_admin_auth";
-
+import { validationMiddleware } from "../middlewares/validation_user_auth";
+ 
 export class FeatureHttpController extends CoreHttpController<any> {
   subRoutes: ISubSetFeatureRouter<any>[] = [];
 
@@ -44,10 +43,10 @@ export class FeatureHttpController extends CoreHttpController<any> {
                   needNext = true;
                 }
                 if (el.accessLevel === AccessLevel.user) {
-                  needNext = userValidationMiddleware(req, res);
+                  needNext = validationMiddleware(req, res, process.env.USER_JWT_SECRET);
                 }
                 if (el.accessLevel === AccessLevel.admin) {
-                  needNext = adminValidationMiddleware(req, res);
+                  needNext = validationMiddleware(req, res, process.env.ADMIN_JWT_SECRET);
                 }
 
                 if (needNext) {
